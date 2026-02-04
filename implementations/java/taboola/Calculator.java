@@ -2,35 +2,24 @@ package taboola;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Queue;
 import java.util.Stack;
-import java.util.stream.Collectors;
 
 public class Calculator {
-    public double add(double a, double b) {
-        return a + b;
-    }
 
-    public double subtract(double a, double b) {
-        return a - b;
-    }
 
-    public double multiply(double a, double b) {
-        return a * b;
-    }
-
-    public double divide(double a, double b) {
+    // Package-private for testing
+    double divide(double a, double b) {
         if (b == 0) {
             throw new IllegalArgumentException("Division by zero is not allowed.");
         }
         return a / b;
     }
 
-    public double increment(double a) {
+    double increment(double a) {
         return a + 1;
     }
 
-    public double decrement(double a) {
+    double decrement(double a) {
         return a - 1;
     }
 
@@ -38,6 +27,20 @@ public class Calculator {
 
     public void setVariable(String name, double value) {
         variables.put(name, new Var(name, value));
+    }
+
+    /**
+     * Normalizes an expression by adding spaces around operators and parentheses.
+     *
+     * @param expression The expression to normalize
+     * @return Normalized expression with spaces
+     */
+    private String normalizeExpression(String expression) {
+        // Add spaces around parentheses
+        expression = expression.replace("(", " ( ").replace(")", " ) ");
+        // Clean up multiple spaces
+        expression = expression.replaceAll("\\s+", " ").trim();
+        return expression;
     }
 
     /**
@@ -62,6 +65,62 @@ public class Calculator {
     }
 
     /**
+     * Processes a series of assignment expressions and returns the final variable values.
+     * Supports a subset of Java numeric expressions and operators.
+     *
+     * Supported operators: +, -, *, /, %, ++, --, +=, -=, *=, /=, %=
+     * Supported features: variables, parentheses, operator precedence
+     *
+     * @param expressions Array of assignment expressions
+     * @return HashMap of variable names to their final values
+     */
+    public HashMap<String, Double> processExpressions(String[] expressions) {
+        for (String expression : expressions) {
+            expression = expression.trim();
+            if (!expression.isEmpty()) {
+                evaluate(expression);
+            }
+        }
+
+        HashMap<String, Double> result = new HashMap<>();
+        for (String key : variables.keySet()) {
+            result.put(key, variables.get(key).getValue());
+        }
+        return result;
+    }
+
+    /**
+     * Formats the variable results in the required output format.
+     * Format: (var1=value1,var2=value2,...)
+     *
+     * @param results HashMap of variable names to values
+     * @return Formatted string
+     */
+    public String formatOutput(HashMap<String, Double> results) {
+        if (results.isEmpty()) {
+            return "()";
+        }
+
+        StringBuilder sb = new StringBuilder("(");
+        results.entrySet().stream()
+            .sorted((e1, e2) -> e1.getKey().compareTo(e2.getKey()))
+            .forEach(entry -> {
+                if (sb.length() > 1) {
+                    sb.append(",");
+                }
+                double value = entry.getValue();
+                // Display as integer if it's a whole number
+                if (value == Math.floor(value) && !Double.isInfinite(value)) {
+                    sb.append(entry.getKey()).append("=").append((int)value);
+                } else {
+                    sb.append(entry.getKey()).append("=").append(value);
+                }
+            });
+        sb.append(")");
+        return sb.toString();
+    }
+
+    /**
      * End-to-end method to evaluate a mathematical expression with variables,
      * increment/decrement operators, parentheses, and operator precedence.
      * Also supports assignment expressions like "a = x + 8 + c * 3"
@@ -74,6 +133,9 @@ public class Calculator {
      * - "a = x + 8 + c * 3" where x=5, c=2 (assigns result to variable 'a')
      */
     public double evaluate(String expression) {
+        // Normalize the expression (add spaces around parentheses and operators)
+        expression = normalizeExpression(expression);
+
         // Check if this is an assignment expression (simple or compound)
         if (expression.contains(" = ") || expression.contains(" += ") ||
             expression.contains(" -= ") || expression.contains(" *= ") ||
@@ -187,7 +249,8 @@ public class Calculator {
     }
 
 
-    public String replacePreIncrementDecrement(String token) {
+    // Package-private for testing
+    String replacePreIncrementDecrement(String token) {
         String operator = token.substring(0, 2);
         String varName = token.substring(2).trim();
         if (!variables.containsKey(varName)) {
@@ -206,7 +269,8 @@ public class Calculator {
         }
     }
 
-    public String replacePostIncrementDecrement(String token) {
+    // Package-private for testing
+    String replacePostIncrementDecrement(String token) {
         String varName = token.substring(0, token.length() - 2).trim();
         String operator = token.substring(token.length() - 2);
         if (!variables.containsKey(varName)) {
@@ -227,7 +291,8 @@ public class Calculator {
     }
 
 
-    public String calculateCleanExpression(String expression) {
+    // Package-private for testing
+    String calculateCleanExpression(String expression) {
         String[] tokens = expression.split(" ");
         if(tokens.length==1){
             return tokens[0];
@@ -242,7 +307,6 @@ public class Calculator {
         }
 
         String b = String.join(" ", tokens).trim();
-        System.out.println(b);
         String[] tokens2 = Arrays.stream(b.split(" ")).filter(s -> !s.isEmpty()).toArray(String[]::new);
         for (int i = 0; i < tokens2.length; i++) {
             if ((Arrays.asList("+", "-").contains(tokens2[i]))) {
@@ -260,7 +324,7 @@ public class Calculator {
             case "*":
                 return v * v1;
             case "/":
-                return v / v1;
+                return divide(v, v1);
             case "%":
                 return v % v1;
             case "+":
@@ -273,7 +337,8 @@ public class Calculator {
 
     }
 
-    public String openBrackets(String expression) {
+    // Package-private for testing
+    String openBrackets(String expression) {
         String[] tokens = expression.split(" ");
         Stack<Integer> stack = new Stack<>();
         for (int i = 0; i < tokens.length; i++) {
@@ -306,114 +371,56 @@ public class Calculator {
     public static void main(String[] args) {
         Calculator calculator = new Calculator();
 
-        // Demo: User's requested feature
-        System.out.println("=== Demo: Assignment Expression ===");
-        calculator.setVariable("x", 5);
-        calculator.setVariable("c", 2);
-        System.out.println("Initial: x=5, c=2");
-        calculator.evaluate("a = x + 8 + c * 3");
-        System.out.println("After: a = x + 8 + c * 3");
-        System.out.println("Value of a: " + calculator.variables.get("a").getValue());
+        // Example from specification
+        System.out.println("Input: Following is a series of valid inputs for the program:");
+        String[] expressions = {
+            "i = 0",
+            "j = ++i",
+            "x = i++ + 5",
+            "y = (5 + 3) * 10",
+            "i += y"
+        };
+
+        for (String expr : expressions) {
+            System.out.println(expr);
+        }
+
+        HashMap<String, Double> results = calculator.processExpressions(expressions);
+        System.out.println("Output:");
+        System.out.println(calculator.formatOutput(results));
         System.out.println();
 
-        // Set up variables
-        calculator.setVariable("x", 5);
-        calculator.setVariable("b", 2);
-        calculator.setVariable("d", 3);
-
-        // Test 1: End-to-end evaluation with variables and operators
-        System.out.println("=== Test 1: Complex expression with variables ===");
-        String expression1 = "x++ + ++b * ( d - 8 ) + x";
-        System.out.println("Expression: " + expression1);
-        System.out.println("Initial values: x=5, b=2, d=3");
-        double result1 = calculator.evaluate(expression1);
-        System.out.println("Result: " + result1);
-        System.out.println("Final values: x=" + calculator.variables.get("x").getValue() +
-                           ", b=" + calculator.variables.get("b").getValue() +
-                           ", d=" + calculator.variables.get("d").getValue());
+        // Additional examples
+        System.out.println("=== Example 2 ===");
+        calculator = new Calculator();
+        String[] expressions2 = {
+            "a = 10",
+            "b = 20",
+            "c = ( a + b ) * 2"
+        };
+        System.out.println("Input:");
+        for (String expr : expressions2) {
+            System.out.println(expr);
+        }
+        HashMap<String, Double> results2 = calculator.processExpressions(expressions2);
+        System.out.println("Output:");
+        System.out.println(calculator.formatOutput(results2));
         System.out.println();
 
-        // Reset variables for test 2
-        calculator.setVariable("x", 5);
-        calculator.setVariable("b", 2);
-        calculator.setVariable("d", 3);
-
-        // Test 2: Expression with only numbers
-        System.out.println("=== Test 2: Expression with numbers only ===");
-        String expression2 = "1 * 8 - 7 + 6 / 2 + 3 % 2";
-        System.out.println("Expression: " + expression2);
-        double result2 = calculator.evaluate(expression2);
-        System.out.println("Result: " + result2);
-        System.out.println();
-
-        // Test 3: Nested parentheses
-        System.out.println("=== Test 3: Nested parentheses ===");
-        String expression3 = "( 1 * ( ( 8 - 7 ) ) + 6 / ( 2 + 3 ) % 2 )";
-        System.out.println("Expression: " + expression3);
-        double result3 = calculator.evaluate(expression3);
-        System.out.println("Result: " + result3);
-        System.out.println();
-
-        // Test 4: Simple expression
-        System.out.println("=== Test 4: Simple arithmetic ===");
-        String expression4 = "10 + 5 * 2";
-        System.out.println("Expression: " + expression4);
-        double result4 = calculator.evaluate(expression4);
-        System.out.println("Result: " + result4);
-        System.out.println();
-
-        // Test 5: Assignment expression
-        System.out.println("=== Test 5: Assignment expression ===");
-        calculator.setVariable("x", 5);
-        calculator.setVariable("c", 2);
-        System.out.println("Initial values: x=5, c=2");
-        String expression5 = "a = x + 8 + c * 3";
-        System.out.println("Expression: " + expression5);
-        double result5 = calculator.evaluate(expression5);
-        System.out.println("Result: a = " + result5);
-        System.out.println("Variable 'a' value: " + calculator.variables.get("a").getValue());
-        System.out.println();
-
-        // Test 6: Compound assignment operators
-        System.out.println("=== Test 6: Compound assignment (+=, -=, *=, /=, %=) ===");
-        calculator.setVariable("num", 10);
-        System.out.println("Initial: num = 10");
-
-        double result6a = calculator.evaluate("num += 5");
-        System.out.println("num += 5  =>  num = " + result6a);
-
-        double result6b = calculator.evaluate("num -= 3");
-        System.out.println("num -= 3  =>  num = " + result6b);
-
-        double result6c = calculator.evaluate("num *= 2");
-        System.out.println("num *= 2  =>  num = " + result6c);
-
-        double result6d = calculator.evaluate("num /= 4");
-        System.out.println("num /= 4  =>  num = " + result6d);
-
-        double result6e = calculator.evaluate("num %= 5");
-        System.out.println("num %= 5  =>  num = " + result6e);
-        System.out.println();
-
-        // Test 7: Complex assignment with variables and operators
-        System.out.println("=== Test 7: Complex assignment ===");
-        calculator.setVariable("x", 10);
-        calculator.setVariable("y", 3);
-        System.out.println("Initial: x=10, y=3");
-        String expression7 = "result = x * 2 + y - 5";
-        System.out.println("Expression: " + expression7);
-        double result7 = calculator.evaluate(expression7);
-        System.out.println("Result: result = " + result7);
-        System.out.println();
-
-        // Test 8: Assignment with parentheses
-        System.out.println("=== Test 8: Assignment with parentheses ===");
-        calculator.setVariable("p", 4);
-        calculator.setVariable("q", 6);
-        System.out.println("Initial: p=4, q=6");
-        String expression8 = "answer = ( p + q ) * 2";
-        System.out.println("Expression: " + expression8);
-        double result8 = calculator.evaluate(expression8);
-        System.out.println("Result: answer = " + result8);
+        System.out.println("=== Example 3 ===");
+        calculator = new Calculator();
+        String[] expressions3 = {
+            "num = 100",
+            "num += 50",
+            "num *= 2",
+            "num /= 4"
+        };
+        System.out.println("Input:");
+        for (String expr : expressions3) {
+            System.out.println(expr);
+        }
+        HashMap<String, Double> results3 = calculator.processExpressions(expressions3);
+        System.out.println("Output:");
+        System.out.println(calculator.formatOutput(results3));
     }
 }
