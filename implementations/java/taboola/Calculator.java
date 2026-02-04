@@ -2,6 +2,7 @@ package taboola;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 
 public class Calculator {
@@ -103,7 +104,7 @@ public class Calculator {
 
         StringBuilder sb = new StringBuilder("(");
         results.entrySet().stream()
-            .sorted((e1, e2) -> e1.getKey().compareTo(e2.getKey()))
+            .sorted(Map.Entry.comparingByKey())
             .forEach(entry -> {
                 if (sb.length() > 1) {
                     sb.append(",");
