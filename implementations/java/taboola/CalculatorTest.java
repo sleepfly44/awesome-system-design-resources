@@ -191,31 +191,31 @@ public class CalculatorTest {
     public void testCalculateCleanExpression_MultiplicationFirst() {
         setUp();
         String result = calculator.calculateCleanExpression("2 + 3 * 4");
-        assertEquals("14.0", result.replaceAll("\\s+", ""), "calculateCleanExpression: Multiplication before addition");
+        assertEquals("14.0", result, "calculateCleanExpression: Multiplication before addition");
     }
 
     public void testCalculateCleanExpression_DivisionFirst() {
         setUp();
         String result = calculator.calculateCleanExpression("10 + 20 / 4");
-        assertEquals("15.0", result.replaceAll("\\s+", ""), "calculateCleanExpression: Division before addition");
+        assertEquals("15.0", result, "calculateCleanExpression: Division before addition");
     }
 
     public void testCalculateCleanExpression_ModuloFirst() {
         setUp();
         String result = calculator.calculateCleanExpression("10 + 7 % 3");
-        assertEquals("11.0", result.replaceAll("\\s+", ""), "calculateCleanExpression: Modulo before addition");
+        assertEquals("11.0", result, "calculateCleanExpression: Modulo before addition");
     }
 
     public void testCalculateCleanExpression_LeftToRight() {
         setUp();
         String result = calculator.calculateCleanExpression("10 - 3 - 2");
-        assertEquals("5.0", result.replaceAll("\\s+", ""), "calculateCleanExpression: Left to right for same precedence");
+        assertEquals("5.0", result, "calculateCleanExpression: Left to right for same precedence");
     }
 
     public void testCalculateCleanExpression_AllOperators() {
         setUp();
         String result = calculator.calculateCleanExpression("1 * 8 - 7 + 6 / 2 + 3 % 2");
-        assertEquals("5.0", result.replaceAll("\\s+", ""), "calculateCleanExpression: All operators");
+        assertEquals("5.0", result, "calculateCleanExpression: All operators");
     }
 
     // ==================== Tests for Parentheses ====================
@@ -223,13 +223,13 @@ public class CalculatorTest {
     public void testOpenBrackets_Simple() {
         setUp();
         String result = calculator.openBrackets("( 2 + 3 )");
-        assertEquals("5.0", result.replaceAll("\\s+", ""), "openBrackets: Simple parentheses");
+        assertEquals("5.0", result, "openBrackets: Simple parentheses");
     }
 
     public void testOpenBrackets_Nested() {
         setUp();
         String result = calculator.openBrackets("( 1 + ( 2 + 3 ) )");
-        assertEquals("6.0", result.replaceAll("\\s+", ""), "openBrackets: Nested parentheses");
+        assertEquals("6.0", result, "openBrackets: Nested parentheses");
     }
 
     public void testOpenBrackets_MultipleNested() {
@@ -242,8 +242,8 @@ public class CalculatorTest {
         setUp();
         String result = calculator.openBrackets("( 2 + 3 ) * 4");
         // After opening brackets, we should have "5.0 * 4" or similar
-        String finalResult = calculator.calculateCleanExpression(result.trim());
-        assertEquals("20.0", finalResult.replaceAll("\\s+", ""), "openBrackets: Parentheses override precedence");
+        String finalResult = calculator.calculateCleanExpression(result);
+        assertEquals("20.0", finalResult, "openBrackets: Parentheses override precedence");
     }
 
     public void testOpenBrackets_MismatchedParentheses() {

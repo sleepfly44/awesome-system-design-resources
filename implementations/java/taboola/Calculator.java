@@ -156,15 +156,11 @@ public class Calculator {
         String withoutBrackets = openBrackets(processedExpression);
 
         // Step 5: Evaluate the final expression with operator precedence
-        String result = calculateCleanExpression(withoutBrackets).trim();
+        String result = calculateCleanExpression(withoutBrackets);
 
         // Step 6: Parse and return the final result
-        // Filter out any empty strings and get the final numeric value
-        String[] resultTokens = Arrays.stream(result.split(" "))
-                                      .filter(s -> !s.isEmpty())
-                                      .toArray(String[]::new);
-
-        return Double.parseDouble(resultTokens[0]);
+        // calculateCleanExpression returns a single numeric value as a string
+        return Double.parseDouble(result);
     }
 
     /**
@@ -306,8 +302,8 @@ public class Calculator {
             }
         }
 
-        String b = String.join(" ", tokens).trim();
-        String[] tokens2 = Arrays.stream(b.split(" ")).filter(s -> !s.isEmpty()).toArray(String[]::new);
+        String b = String.join(" ", tokens).replaceAll("\\s+", " ").trim();
+        String[] tokens2 = b.isEmpty() ? new String[0] : b.split(" ");
         for (int i = 0; i < tokens2.length; i++) {
             if ((Arrays.asList("+", "-").contains(tokens2[i]))) {
                 tokens2[i + 1] = String.valueOf(calculate(Double.parseDouble(tokens2[i - 1]), Double.parseDouble(tokens2[i + 1]), tokens2[i]));
@@ -316,7 +312,7 @@ public class Calculator {
                 i++;
             }
         }
-        return String.join(" ", tokens2);
+        return String.join(" ", tokens2).replaceAll("\\s+", " ").trim();
     }
 
     private Double calculate(double v, double v1, String operator) {
@@ -359,13 +355,15 @@ public class Calculator {
         if (!stack.empty()) {
             throw new IllegalArgumentException("Mismatched parentheses in expression.");
         }
-        String[] array = Arrays.stream(tokens).filter(s -> !s.isEmpty()).toArray(String[]::new);
 
-        return String.join(" ", array).trim();
+        return String.join(" ", tokens).replaceAll("\\s+", " ").trim();
     }
 
     private static String[] getElements(String[] tokens, int i, int openIndex) {
-        return Arrays.stream(Arrays.copyOfRange(tokens, openIndex + 1, i)).filter(s -> !s.isEmpty()).toArray(String[]::new);
+        String joined = String.join(" ", Arrays.copyOfRange(tokens, openIndex + 1, i))
+                              .replaceAll("\\s+", " ")
+                              .trim();
+        return joined.isEmpty() ? new String[0] : joined.split(" ");
     }
 
     public static void main(String[] args) {
