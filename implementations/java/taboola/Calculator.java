@@ -73,31 +73,26 @@ public class Calculator {
      * Supported features: variables, parentheses, operator precedence
      *
      * @param expressions Array of assignment expressions
-     * @return HashMap of variable names to their final values
+     * @return HashMap of variable names to their Var objects
      */
-    public HashMap<String, Double> processExpressions(String[] expressions) {
+    public HashMap<String, Var> processExpressions(String[] expressions) {
         for (String expression : expressions) {
             expression = expression.trim();
             if (!expression.isEmpty()) {
                 evaluate(expression);
             }
         }
-
-        HashMap<String, Double> result = new HashMap<>();
-        for (String key : variables.keySet()) {
-            result.put(key, variables.get(key).getValue());
-        }
-        return result;
+        return variables;
     }
 
     /**
      * Formats the variable results in the required output format.
      * Format: (var1=value1,var2=value2,...)
      *
-     * @param results HashMap of variable names to values
+     * @param results HashMap of variable names to Var objects
      * @return Formatted string
      */
-    public String formatOutput(HashMap<String, Double> results) {
+    public String formatOutput(HashMap<String, Var> results) {
         if (results.isEmpty()) {
             return "()";
         }
@@ -109,7 +104,7 @@ public class Calculator {
                 if (sb.length() > 1) {
                     sb.append(",");
                 }
-                double value = entry.getValue();
+                double value = entry.getValue().getValue();
                 // Display as integer if it's a whole number
                 if (value == Math.floor(value) && !Double.isInfinite(value)) {
                     sb.append(entry.getKey()).append("=").append((int)value);
@@ -384,7 +379,7 @@ public class Calculator {
             System.out.println(expr);
         }
 
-        HashMap<String, Double> results = calculator.processExpressions(expressions);
+        HashMap<String, Var> results = calculator.processExpressions(expressions);
         System.out.println("Output:");
         System.out.println(calculator.formatOutput(results));
         System.out.println();
@@ -401,7 +396,7 @@ public class Calculator {
         for (String expr : expressions2) {
             System.out.println(expr);
         }
-        HashMap<String, Double> results2 = calculator.processExpressions(expressions2);
+        HashMap<String, Var> results2 = calculator.processExpressions(expressions2);
         System.out.println("Output:");
         System.out.println(calculator.formatOutput(results2));
         System.out.println();
@@ -418,7 +413,7 @@ public class Calculator {
         for (String expr : expressions3) {
             System.out.println(expr);
         }
-        HashMap<String, Double> results3 = calculator.processExpressions(expressions3);
+        HashMap<String, Var> results3 = calculator.processExpressions(expressions3);
         System.out.println("Output:");
         System.out.println(calculator.formatOutput(results3));
     }
