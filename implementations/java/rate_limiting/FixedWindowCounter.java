@@ -17,11 +17,12 @@ public class FixedWindowCounter {
 
     public synchronized boolean allowRequest() {
         long now = Instant.now().getEpochSecond();
-        
+        long windowStart = now - now % windowSizeInSeconds;  // Align to fixed window boundaries
+
         // Check if we've moved to a new window
-        if (now - currentWindowStart >= windowSizeInSeconds) {
-            currentWindowStart = now;  // Start a new window
-            requestCount = 0;          // Reset the count for the new window
+        if (windowStart > currentWindowStart) {
+            currentWindowStart = windowStart;  // Start a new aligned window
+            requestCount = 0;                  // Reset the count for the new window
         }
 
         if (requestCount < maxRequestsPerWindow) {
