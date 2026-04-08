@@ -1,6 +1,6 @@
-package leetcode;
+package implementations.java.leetcode;
 
-class Solution {
+class Jumps1 {
     public int jump(int[] nums) {
         int size = nums.length;
         int[] dp = new int[size];
@@ -27,7 +27,7 @@ class Solution {
     }
 
     public static void main(String[] args) {
-        Solution s = new Solution();
+        Jumps1 s = new Jumps1();
         int[] arr = {2,3,1,1,4};
         s.jump(arr);
     }
